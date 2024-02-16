@@ -130,6 +130,11 @@ class AdminChangelistTests(TestCase):
                 response = self.client.get("/admin/poi/pointofinterest/", {"q": term})
                 self.assertEqual(response.status_code, 200)
 
+    def test_header_names_the_tool_and_drops_the_dead_view_site_link(self):
+        response = self.client.get("/admin/")
+        self.assertContains(response, "PoI importer")
+        self.assertNotContains(response, "View site")
+
     def test_category_filter_through_the_changelist(self):
         response = self.client.get("/admin/poi/pointofinterest/", {"category": "bus-stop"})
         self.assertEqual(response.status_code, 200)
