@@ -59,9 +59,33 @@ def _batched(iterable: Iterable[PoIRecord], size: int) -> Iterator[list[PoIRecor
         yield batch
 
 
+#: Text columns and their database limits, read from the model so the two
+#: cannot disagree.
+_TEXT_LIMITS = {
+    name: PointOfInterest._meta.get_field(name).max_length
+    for name in ("external_id", "name", "category")
+}
+
+
+def _oversized_field(record: PoIRecord) -> str | None:
+    """Return a reason if a text field is longer than its column allows.
+
+    SQLite ignores ``max_length`` and would store the value; Postgres and
+    MySQL reject the INSERT, which fails the whole batch. Checking here keeps
+    the outcome the same on every backend: the one record is skipped.
+    """
+    for name, limit in _TEXT_LIMITS.items():
+        length = len(getattr(record, name))
+        if length > limit:
+            return f"{name} is {length} characters, the limit is {limit}"
+    return None
+
+
 def _usable(outcomes: Iterable[ParseOutcome], result: ImportResult) -> Iterator[PoIRecord]:
     """Yield the records from a parser stream, tallying the skipped ones."""
     for outcome in outcomes:
+        if isinstance(outcome, PoIRecord) and (reason := _oversized_field(outcome)):
+            outcome = SkippedRecord(f"external_id {outcome.external_id[:40]!r}", reason)
         if isinstance(outcome, SkippedRecord):
             result.skipped += 1
             if len(result.errors) < MAX_REPORTED_ERRORS:

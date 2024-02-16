@@ -133,6 +133,25 @@ class ImportFileTests(TestCase):
         self.assertEqual((result.created, result.skipped), (1, 1))
         self.assertEqual(list(PointOfInterest.objects.values_list("external_id", flat=True)), ["2"])
 
+    def test_values_longer_than_their_column_are_skipped_on_every_backend(self):
+        """SQLite would store these; Postgres would reject the whole batch."""
+        header = "poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings\n"
+        path = write_temp(
+            self,
+            ".csv",
+            header
+            + f'{"9" * 101},Long id,cafe,1,2,"{{1}}"\n'
+            + f'2,{"n" * 256},cafe,1,2,"{{1}}"\n'
+            + f'3,Long category,{"c" * 101},1,2,"{{1}}"\n'
+            + f'4,{"n" * 255},{"c" * 100},1,2,"{{1}}"\n',
+        )
+        result = import_file(path)
+        self.assertEqual((result.created, result.skipped), (1, 3))
+        self.assertIn("external_id is 101 characters, the limit is 100", result.errors[0])
+        self.assertIn("name is 256 characters", result.errors[1])
+        self.assertIn("category is 101 characters", result.errors[2])
+        self.assertEqual(PointOfInterest.objects.get().external_id, "4")
+
     def test_missing_file_raises_oserror(self):
         with self.assertRaises(OSError):
             import_file("/nonexistent/path/to/data.csv")
