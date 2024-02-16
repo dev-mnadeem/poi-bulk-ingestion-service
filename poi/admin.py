@@ -46,8 +46,9 @@ class PointOfInterestAdmin(admin.ModelAdmin):
         criteria = Q(external_id__exact=term)
         # internal_id is an integer primary key. Only compare against it when
         # the term is an integer the column could actually hold: otherwise the
-        # ORM either raises on the cast or overflows the backend.
-        if term.isdigit() and int(term) <= self._BIGINT_MAX:
+        # ORM either raises on the cast or overflows the backend. isdigit()
+        # alone is true for "²", which int() rejects, so the term must be ASCII.
+        if term.isascii() and term.isdigit() and int(term) <= self._BIGINT_MAX:
             criteria |= Q(internal_id=int(term))
 
         # No duplicates are possible: both branches match at most one row and

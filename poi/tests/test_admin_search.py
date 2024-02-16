@@ -8,6 +8,7 @@ return, derived by hand from ``poi/test_files/dummy.csv``, and compare.
 from __future__ import annotations
 
 from django.contrib.admin.sites import AdminSite
+from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.test import RequestFactory, TestCase
 
@@ -72,12 +73,14 @@ class AdminSearchTests(TestCase):
             ("bus-stop", [], "a category is not an ID field"),
             ("-1", [], "a negative number matches no ID"),
             ("99999999999999999999", [], "an out-of-range number matches nothing"),
+            ("²", [], "a superscript digit is not an integer"),
+            ("٣", [], "a non-ASCII digit is not an internal ID"),
         ]
         for term, expected, why in cases:
             with self.subTest(query=term, why=why):
                 self.assertEqual(self.search(term), expected, why)
 
-    def test_search_is_case_insensitive_for_non_numeric_ids(self):
+    def test_search_is_case_sensitive_for_non_numeric_ids(self):
         """External IDs are opaque strings, so exact means byte-exact."""
         PointOfInterest.objects.create(
             external_id="AbC-42",
@@ -108,6 +111,29 @@ class AdminSearchTests(TestCase):
 
     def test_records_cannot_be_added_by_hand(self):
         self.assertFalse(self.admin.has_add_permission(self.request))
+
+
+class AdminChangelistTests(TestCase):
+    """The changelist page itself, through Django's request cycle."""
+
+    @classmethod
+    def setUpTestData(cls):
+        import_file(fixture("dummy.csv"))
+        cls.user = get_user_model().objects.create_superuser("admin", "admin@example.com")
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_odd_search_terms_render_the_page_instead_of_a_server_error(self):
+        for term in ["²", "٣", "-1", "99999999999999999999", "1806848972"]:
+            with self.subTest(term=term):
+                response = self.client.get("/admin/poi/pointofinterest/", {"q": term})
+                self.assertEqual(response.status_code, 200)
+
+    def test_category_filter_through_the_changelist(self):
+        response = self.client.get("/admin/poi/pointofinterest/", {"category": "bus-stop"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["cl"].result_count, 3)
 
 
 class PaginationTests(TestCase):
