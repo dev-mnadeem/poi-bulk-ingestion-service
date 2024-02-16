@@ -26,10 +26,9 @@ def write_temp(test_case, suffix: str, content: str, encoding: str = "utf-8") ->
     For inputs too specific to deserve a committed fixture, such as a single
     malformed value or a byte-order mark.
     """
-    handle = tempfile.NamedTemporaryFile(
+    with tempfile.NamedTemporaryFile(
         "w", suffix=suffix, delete=False, encoding=encoding, newline=""
-    )
-    with handle:
+    ) as handle:
         handle.write(content)
     test_case.addCleanup(os.unlink, handle.name)
     return handle.name

@@ -156,6 +156,10 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "")
 CELERY_TASK_ALWAYS_EAGER = _env_bool("CELERY_TASK_ALWAYS_EAGER", RUNNING_TESTS)
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+# Keep retrying if the broker is not up yet when the worker starts (it often
+# is not under Compose). Stated explicitly because Celery 5.3+ warns that the
+# implicit default is going away.
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 # --- Security (applied when not in DEBUG) -----------------------------------
 

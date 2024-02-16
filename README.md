@@ -187,7 +187,8 @@ class with an `extensions` tuple and a `parse()` method yielding `PoIRecord` or
 
 ```python
 from poi.parsers import register
-register(MyGeoJsonParser())     # claims ".geojson"
+
+register(MyGeoJsonParser())  # claims ".geojson"
 ```
 
 Nothing in the importer, the command or the Celery task changes, and `import_poi

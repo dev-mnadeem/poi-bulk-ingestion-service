@@ -42,36 +42,34 @@ CATEGORIES = ["restaurant", "bus-stop", "beach", "cafe", "kindergarten", "fast-f
 
 def make_csv(rows: int) -> str:
     """Write a synthetic PoI CSV and return its path."""
-    handle = tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, newline="")
-    handle.write("poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings\n")
-    rng = random.Random(1234)
-    for index in range(rows):
-        ratings = ",".join(f"{rng.uniform(1, 5):.1f}" for _ in range(10))
-        handle.write(
-            f"{index},PoI number {index},{CATEGORIES[index % len(CATEGORIES)]},"
-            f"{rng.uniform(-90, 90):.6f},{rng.uniform(-180, 180):.6f},"
-            f'"{{{ratings}}}"\n'
-        )
-    handle.close()
+    with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, newline="") as handle:
+        handle.write("poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings\n")
+        rng = random.Random(1234)
+        for index in range(rows):
+            ratings = ",".join(f"{rng.uniform(1, 5):.1f}" for _ in range(10))
+            handle.write(
+                f"{index},PoI number {index},{CATEGORIES[index % len(CATEGORIES)]},"
+                f"{rng.uniform(-90, 90):.6f},{rng.uniform(-180, 180):.6f},"
+                f'"{{{ratings}}}"\n'
+            )
     return handle.name
 
 
 def make_xml(rows: int) -> str:
     """Write a synthetic PoI XML document and return its path."""
-    handle = tempfile.NamedTemporaryFile("w", suffix=".xml", delete=False)
-    handle.write("<PointsOfInterest>\n")
-    rng = random.Random(1234)
-    for index in range(rows):
-        ratings = ",".join(f"{rng.uniform(1, 5):.1f}" for _ in range(10))
-        handle.write(
-            f"  <POI><pid>{index}</pid><pname>PoI number {index}</pname>"
-            f"<pcategory>{CATEGORIES[index % len(CATEGORIES)]}</pcategory>"
-            f"<platitude>{rng.uniform(-90, 90):.6f}</platitude>"
-            f"<plongitude>{rng.uniform(-180, 180):.6f}</plongitude>"
-            f"<pratings>{ratings}</pratings></POI>\n"
-        )
-    handle.write("</PointsOfInterest>\n")
-    handle.close()
+    with tempfile.NamedTemporaryFile("w", suffix=".xml", delete=False) as handle:
+        handle.write("<PointsOfInterest>\n")
+        rng = random.Random(1234)
+        for index in range(rows):
+            ratings = ",".join(f"{rng.uniform(1, 5):.1f}" for _ in range(10))
+            handle.write(
+                f"  <POI><pid>{index}</pid><pname>PoI number {index}</pname>"
+                f"<pcategory>{CATEGORIES[index % len(CATEGORIES)]}</pcategory>"
+                f"<platitude>{rng.uniform(-90, 90):.6f}</platitude>"
+                f"<plongitude>{rng.uniform(-180, 180):.6f}</plongitude>"
+                f"<pratings>{ratings}</pratings></POI>\n"
+            )
+        handle.write("</PointsOfInterest>\n")
     return handle.name
 
 

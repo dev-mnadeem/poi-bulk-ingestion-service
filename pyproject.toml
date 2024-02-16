@@ -2,11 +2,11 @@
 name = "searchsmartly"
 version = "1.0.0"
 description = "Import Point of Interest data from CSV, JSON and XML files and browse it in the Django admin."
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 extend-exclude = ["poi/migrations", "project_venv"]
 
 [tool.ruff.lint]
