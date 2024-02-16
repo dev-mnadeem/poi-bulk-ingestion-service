@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from django.core.management.base import BaseCommand, CommandError
 
-from poi.parsers import ParseError, UnsupportedFormat, supported_extensions
+from poi.parsers import ParseError, UnsupportedFormat, get_parser, supported_extensions
 from poi.services import DEFAULT_BATCH_SIZE, import_file
 from poi.tasks import import_poi_file
 
@@ -44,6 +44,14 @@ class Command(BaseCommand):
             raise CommandError("--batch-size must be at least 1")
 
         if options["run_async"]:
+            # The worker may run on another machine, so file existence is its
+            # call. An extension nothing can parse is known here, though, and
+            # would otherwise be "queued" only to fail in the worker's log.
+            for file_path in options["files"]:
+                try:
+                    get_parser(file_path)
+                except UnsupportedFormat as exc:
+                    raise CommandError(f"{file_path}: {exc}") from None
             for file_path in options["files"]:
                 import_poi_file.delay(file_path)
                 self.stdout.write(f"queued {file_path}")

@@ -54,6 +54,14 @@ class ImportPoiCommandTests(TestCase):
         self.assertIn("Queued 1 file(s)", out)
         self.assertEqual(PointOfInterest.objects.count(), 0)
 
+    def test_async_mode_refuses_an_unsupported_extension_before_queueing_anything(self):
+        with (
+            patch("poi.tasks.import_poi_file.delay") as delay,
+            self.assertRaisesMessage(CommandError, "places.geojson"),
+        ):
+            self.run_command(fixture("dummy.csv"), "places.geojson", "--async")
+        delay.assert_not_called()
+
 
 class CeleryTaskTests(TestCase):
     def test_task_returns_a_serialisable_summary(self):
