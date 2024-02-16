@@ -1,0 +1,18 @@
+<PointsOfInterest>
+  <POI>
+    <pid>1</pid>
+    <pname>POI 1</pname>
+    <pcategory>Category 1</pcategory>
+    <platitude>10.0</platitude>
+    <plongitude>20.0</plongitude>
+    <pratings>5,4,3</pratings>
+  </POI>
+  <POI>
+    <pid>2</pid>
+    <pname>POI 2</pname>
+    <pcategory>Category 2</pcategory>
+    <platitude>15.0</platitude>
+    <plongitude>25.0</plongitude>
+    <pratings>2,3,4</pratings>
+  </POI>
+</PointsOfInterest>

@@ -1,0 +1,37 @@
+[project]
+name = "searchsmartly"
+version = "1.0.0"
+description = "Import Point of Interest data from CSV, JSON and XML files and browse it in the Django admin."
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["poi/migrations", "project_venv"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # import ordering
+    "B",    # bugbear
+    "UP",   # pyupgrade
+    "C4",   # comprehensions
+    "DJ",   # Django-specific checks
+    "SIM",  # simplifications
+    "RUF",  # ruff-specific
+]
+ignore = [
+    # Django models are declarative; a __str__ is present where it matters.
+    "RUF012",  # mutable class attrs need ClassVar - noisy on ModelAdmin
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests are allowed long, descriptive assertions. The Cyrillic and CJK names
+# flagged by RUF001 are the point of test_non_ascii_names_survive_parsing:
+# they are copied verbatim from poi/test_files/dummy.csv.
+"poi/tests/*" = ["E501", "RUF001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["poi", "SearchSmartly"]

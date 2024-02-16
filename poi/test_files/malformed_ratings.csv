@@ -1,0 +1,2 @@
+poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings
+5,Malformed Ratings POI,Category,10.0,20.0,not_a_proper_list

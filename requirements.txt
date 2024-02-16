@@ -1,0 +1,14 @@
+# Runtime dependencies.
+#
+# The original pin set could not be installed at all on a current toolchain:
+# celery==5.1.2 ships metadata that pip >= 24.1 rejects outright, and the
+# numpy/pandas pins had no wheels for supported Python versions.
+#
+# pandas and numpy are gone entirely. The CSV importer streams with the
+# standard library `csv` module, which is what the row-at-a-time importer
+# actually needs and drops ~60 MB of transitive dependencies.
+Django==4.2.20
+celery==5.4.0
+
+# WSGI server used by the Docker image; not needed for `manage.py runserver`.
+gunicorn==23.0.0

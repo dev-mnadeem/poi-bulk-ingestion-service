@@ -1,0 +1,17 @@
+Python 3.13.7, SQLite 3.53.4
+
+--- 50,000 rows (4.6 MB CSV) ---
+legacy: objects.create per row         9.16s    50000 rows    50000 INSERTs      0.3 MB peak
+current: bulk_create batch=500         3.50s    50000 rows      400 INSERTs      0.8 MB peak
+current: bulk_create batch=1000        3.38s    50000 rows      350 INSERTs      1.0 MB peak
+  XML parsing only (10.4 MB document):
+  legacy: ElementTree.parse            0.58s    50000 rows                      52.1 MB peak
+  current: iterparse + clear           1.09s    50000 rows                       0.2 MB peak
+
+--- 200,000 rows (18.7 MB CSV) ---
+legacy: objects.create per row        35.39s   200000 rows   200000 INSERTs      0.1 MB peak
+current: bulk_create batch=500        14.45s   200000 rows     1600 INSERTs      0.8 MB peak
+current: bulk_create batch=1000       14.32s   200000 rows     1400 INSERTs      1.1 MB peak
+  XML parsing only (42.0 MB document):
+  legacy: ElementTree.parse            2.43s   200000 rows                     208.0 MB peak
+  current: iterparse + clear           4.37s   200000 rows                       0.2 MB peak

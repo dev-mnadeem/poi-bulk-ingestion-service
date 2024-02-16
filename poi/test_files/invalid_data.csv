@@ -1,0 +1,2 @@
+poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings
+invalid,Invalid POI,Category,not_a_float,not_a_float,not_a_list

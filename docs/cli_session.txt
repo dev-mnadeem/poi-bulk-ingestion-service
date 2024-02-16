@@ -1,0 +1,59 @@
+$ python manage.py import_poi poi/test_files/dummy.csv poi/test_files/valid_data.json poi/test_files/valid_data.xml
+poi/test_files/dummy.csv: 0 created, 10 updated, 0 skipped
+poi/test_files/valid_data.json: 2 created, 0 updated, 0 skipped
+poi/test_files/valid_data.xml: 0 created, 2 updated, 0 skipped
+Imported 2 new and 12 updated PoI records, skipped 0.
+
+$ python manage.py import_poi poi/test_files/dummy.csv        # re-import upserts, it does not duplicate
+poi/test_files/dummy.csv: 0 created, 10 updated, 0 skipped
+Imported 0 new and 10 updated PoI records, skipped 0.
+
+$ python manage.py import_poi poi/test_files/edge_cases.json  # unusable records are skipped, not fatal
+WARNING poi.services.importer poi/test_files/edge_cases.json: item 1: missing or malformed 'coordinates' object
+WARNING poi.services.importer poi/test_files/edge_cases.json: item 2: 'ratings' must be a list, got str
+poi/test_files/edge_cases.json: 1 created, 0 updated, 2 skipped
+Imported 1 new and 0 updated PoI records, skipped 2.
+
+$ python manage.py import_poi poi/test_files/missing_column.csv  # a structural problem fails the file
+poi/test_files/missing_column.csv: missing required column(s): poi_category
+CommandError: Imported 0 new and 0 updated PoI records, skipped 0. 1 file(s) could not be read.
+exit status: 1
+
+$ python manage.py import_poi places.geojson                  # no parser registered
+places.geojson: no parser registered for '.geojson'; supported: .csv, .json, .xml
+CommandError: Imported 0 new and 0 updated PoI records, skipped 0. 1 file(s) could not be read.
+exit status: 1
+
+$ python manage.py import_poi --help
+usage: manage.py import_poi [-h] [--async] [--batch-size BATCH_SIZE]
+                            [--version] [-v {0,1,2,3}] [--settings SETTINGS]
+                            [--pythonpath PYTHONPATH] [--traceback]
+                            [--no-color] [--force-color] [--skip-checks]
+                            FILE [FILE ...]
+
+Import PoI data from CSV, JSON and XML files.
+
+positional arguments:
+  FILE                  Paths to import. Supported: .csv, .json, .xml
+
+options:
+  -h, --help            show this help message and exit
+  --async               Queue each file on Celery instead of importing in-
+                        process.
+  --batch-size BATCH_SIZE
+                        Rows per bulk insert (default: 500).
+  --version             Show program's version number and exit.
+  -v, --verbosity {0,1,2,3}
+                        Verbosity level; 0=minimal output, 1=normal output,
+                        2=verbose output, 3=very verbose output
+  --settings SETTINGS   The Python path to a settings module, e.g.
+                        "myproject.settings.main". If this isn't provided, the
+                        DJANGO_SETTINGS_MODULE environment variable will be
+                        used.
+  --pythonpath PYTHONPATH
+                        A directory to add to the Python path, e.g.
+                        "/home/djangoprojects/myproject".
+  --traceback           Raise on CommandError exceptions.
+  --no-color            Don't colorize the command output.
+  --force-color         Force colorization of the command output.
+  --skip-checks         Skip system checks.

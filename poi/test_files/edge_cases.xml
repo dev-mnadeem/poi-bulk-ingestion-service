@@ -1,0 +1,18 @@
+<PointsOfInterest>
+  <POI>
+    <pid>20</pid>
+    <pname>Unrated Park</pname>
+    <pcategory>park</pcategory>
+    <platitude>1.25</platitude>
+    <plongitude>2.5</plongitude>
+    <pratings></pratings>
+  </POI>
+  <POI>
+    <pid>21</pid>
+    <pname>Bad Coords</pname>
+    <pcategory>park</pcategory>
+    <platitude>not_a_float</platitude>
+    <plongitude>2.5</plongitude>
+    <pratings>1,2</pratings>
+  </POI>
+</PointsOfInterest>

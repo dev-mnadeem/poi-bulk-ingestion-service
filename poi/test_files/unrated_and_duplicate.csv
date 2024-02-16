@@ -1,0 +1,4 @@
+poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings
+7,Unrated POI,cafe,1.5,2.5,{}
+8,Duplicate,cafe,3.5,4.5,"{5}"
+8,Duplicate Again,cafe,3.5,4.5,"{1}"
