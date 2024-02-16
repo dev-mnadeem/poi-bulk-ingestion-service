@@ -14,7 +14,7 @@ from .base import (
     SkippedRecord,
     mean_rating,
     require,
-    to_float,
+    to_coordinate,
 )
 
 
@@ -61,7 +61,7 @@ class JsonParser:
             external_id=require(item.get("id"), "id"),
             name=require(item.get("name"), "name"),
             category=require(item.get("category"), "category"),
-            latitude=to_float(coordinates.get("latitude"), "coordinates.latitude"),
-            longitude=to_float(coordinates.get("longitude"), "coordinates.longitude"),
+            latitude=to_coordinate(coordinates.get("latitude"), "coordinates.latitude", 90),
+            longitude=to_coordinate(coordinates.get("longitude"), "coordinates.longitude", 180),
             avg_rating=mean_rating(values),
         )

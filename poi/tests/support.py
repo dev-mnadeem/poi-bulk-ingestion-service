@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 
 #: Directory holding the committed sample files. The tests read these real
@@ -16,3 +18,18 @@ def fixture(name: str) -> str:
     if not path.exists():
         raise FileNotFoundError(f"missing test fixture: {path}")
     return str(path)
+
+
+def write_temp(test_case, suffix: str, content: str, encoding: str = "utf-8") -> str:
+    """Write ``content`` to a temporary file removed when ``test_case`` ends.
+
+    For inputs too specific to deserve a committed fixture, such as a single
+    malformed value or a byte-order mark.
+    """
+    handle = tempfile.NamedTemporaryFile(
+        "w", suffix=suffix, delete=False, encoding=encoding, newline=""
+    )
+    with handle:
+        handle.write(content)
+    test_case.addCleanup(os.unlink, handle.name)
+    return handle.name

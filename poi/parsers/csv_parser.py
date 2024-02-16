@@ -20,7 +20,7 @@ from .base import (
     SkippedRecord,
     mean_rating,
     require,
-    to_float,
+    to_coordinate,
 )
 
 # Some published PoI exports carry a single very long ratings field. Raise the
@@ -84,7 +84,7 @@ class CsvParser:
             external_id=require(row.get("poi_id"), "poi_id"),
             name=require(row.get("poi_name"), "poi_name"),
             category=require(row.get("poi_category"), "poi_category"),
-            latitude=to_float(row.get("poi_latitude"), "poi_latitude"),
-            longitude=to_float(row.get("poi_longitude"), "poi_longitude"),
+            latitude=to_coordinate(row.get("poi_latitude"), "poi_latitude", 90),
+            longitude=to_coordinate(row.get("poi_longitude"), "poi_longitude", 180),
             avg_rating=mean_rating(parse_ratings(row.get("poi_ratings") or "")),
         )

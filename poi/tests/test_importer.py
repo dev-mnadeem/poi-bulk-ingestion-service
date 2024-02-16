@@ -9,7 +9,7 @@ from poi.parsers import UnsupportedFormat
 from poi.parsers.base import ParseError
 from poi.services import import_file
 
-from .support import fixture
+from .support import fixture, write_temp
 
 
 class ImportFileTests(TestCase):
@@ -119,6 +119,19 @@ class ImportFileTests(TestCase):
         with self.assertRaises(ParseError):
             import_file(fixture("missing_column.csv"))
         self.assertEqual(PointOfInterest.objects.count(), 0)
+
+    def test_a_nan_coordinate_is_skipped_instead_of_aborting_the_import(self):
+        """SQLite stores NaN as NULL, which used to fail NOT NULL mid-import."""
+        path = write_temp(
+            self,
+            ".csv",
+            "poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings\n"
+            '1,A,cafe,nan,2,"{1}"\n'
+            '2,B,cafe,1,2,"{1}"\n',
+        )
+        result = import_file(path)
+        self.assertEqual((result.created, result.skipped), (1, 1))
+        self.assertEqual(list(PointOfInterest.objects.values_list("external_id", flat=True)), ["2"])
 
     def test_missing_file_raises_oserror(self):
         with self.assertRaises(OSError):

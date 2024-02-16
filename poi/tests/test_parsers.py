@@ -11,12 +11,20 @@ from __future__ import annotations
 from django.test import SimpleTestCase
 
 from poi.parsers import UnsupportedFormat, get_parser, supported_extensions
-from poi.parsers.base import ParseError, PoIRecord, RecordError, SkippedRecord
+from poi.parsers.base import (
+    ParseError,
+    PoIRecord,
+    RecordError,
+    SkippedRecord,
+    mean_rating,
+    to_coordinate,
+    to_float,
+)
 from poi.parsers.csv_parser import CsvParser, parse_ratings
 from poi.parsers.json_parser import JsonParser
 from poi.parsers.xml_parser import XmlParser
 
-from .support import fixture
+from .support import fixture, write_temp
 
 
 def collect(parser, name: str) -> tuple[list[PoIRecord], list[SkippedRecord]]:
@@ -218,3 +226,59 @@ class RegistryTests(SimpleTestCase):
 
     def test_supported_extensions_are_reported(self):
         self.assertEqual(list(supported_extensions()), [".csv", ".json", ".xml"])
+
+
+class ValueValidationTests(SimpleTestCase):
+    """Numbers that ``float()`` accepts but that are not usable PoI data."""
+
+    CSV_HEADER = "poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings\n"
+
+    def test_non_finite_numbers_are_rejected(self):
+        for raw in ["nan", "NaN", "inf", "-inf", "Infinity"]:
+            with self.subTest(raw=raw), self.assertRaises(RecordError):
+                to_float(raw, "poi_latitude")
+
+    def test_coordinates_must_be_on_the_globe(self):
+        self.assertEqual(to_coordinate("-90", "lat", 90), -90.0)
+        self.assertEqual(to_coordinate("180", "lon", 180), 180.0)
+        for raw, limit in [("90.0001", 90), ("-91", 90), ("180.5", 180), ("-500", 180)]:
+            with self.subTest(raw=raw), self.assertRaises(RecordError):
+                to_coordinate(raw, "coordinate", limit)
+
+    def test_non_finite_ratings_are_rejected(self):
+        with self.assertRaises(RecordError):
+            mean_rating([4.0, float("nan")])
+        with self.assertRaises(RecordError):
+            mean_rating([float("inf")])
+
+    def test_each_format_skips_an_impossible_latitude_and_keeps_going(self):
+        sources = {
+            ".csv": self.CSV_HEADER + '1,A,cafe,95,10,"{1}"\n2,B,cafe,45,10,"{2}"\n',
+            ".json": (
+                '[{"id": 1, "name": "A", "category": "cafe",'
+                ' "coordinates": {"latitude": 95, "longitude": 10}, "ratings": [1]},'
+                ' {"id": 2, "name": "B", "category": "cafe",'
+                ' "coordinates": {"latitude": 45, "longitude": 10}, "ratings": [2]}]'
+            ),
+            ".xml": (
+                "<r><p><pid>1</pid><pname>A</pname><pcategory>cafe</pcategory>"
+                "<platitude>95</platitude><plongitude>10</plongitude><pratings>1</pratings></p>"
+                "<p><pid>2</pid><pname>B</pname><pcategory>cafe</pcategory>"
+                "<platitude>45</platitude><plongitude>10</plongitude><pratings>2</pratings></p></r>"
+            ),
+        }
+        for suffix, content in sources.items():
+            with self.subTest(format=suffix):
+                path = write_temp(self, suffix, content)
+                outcomes = list(get_parser(path).parse(path))
+                self.assertIsInstance(outcomes[0], SkippedRecord)
+                self.assertIn("outside -90..90", outcomes[0].reason)
+                self.assertEqual(outcomes[1].external_id, "2")
+
+    def test_a_nan_rating_in_csv_skips_only_that_row(self):
+        path = write_temp(
+            self, ".csv", self.CSV_HEADER + '1,A,cafe,1,2,"{nan}"\n2,B,cafe,1,2,"{3}"\n'
+        )
+        outcomes = list(CsvParser().parse(path))
+        self.assertIsInstance(outcomes[0], SkippedRecord)
+        self.assertEqual(outcomes[1].avg_rating, 3.0)

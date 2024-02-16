@@ -13,7 +13,7 @@ from .base import (
     SkippedRecord,
     mean_rating,
     require,
-    to_float,
+    to_coordinate,
 )
 
 
@@ -77,8 +77,8 @@ class XmlParser:
             external_id=require(values["pid"], "pid"),
             name=require(values["pname"], "pname"),
             category=require(values["pcategory"], "pcategory"),
-            latitude=to_float(values["platitude"], "platitude"),
-            longitude=to_float(values["plongitude"], "plongitude"),
+            latitude=to_coordinate(values["platitude"], "platitude", 90),
+            longitude=to_coordinate(values["plongitude"], "plongitude", 180),
             avg_rating=mean_rating(cls._parse_ratings(values["pratings"])),
         )
 
