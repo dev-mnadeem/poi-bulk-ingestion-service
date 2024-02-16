@@ -1,5 +1,5 @@
 [project]
-name = "searchsmartly"
+name = "poi-importer"
 version = "1.0.0"
 description = "Import Point of Interest data from CSV, JSON and XML files and browse it in the Django admin."
 requires-python = ">=3.12"
