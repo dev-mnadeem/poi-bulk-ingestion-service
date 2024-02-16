@@ -33,6 +33,10 @@ COPY --from=build /opt/venv /opt/venv
 WORKDIR /app
 COPY --chown=appuser:appuser . .
 
+# Collect the admin's CSS and JS into STATIC_ROOT for WhiteNoise to serve.
+# DJANGO_DEBUG=1 only lets settings load without a real key at build time.
+RUN DJANGO_DEBUG=1 python manage.py collectstatic --noinput --verbosity 0
+
 USER appuser
 VOLUME ["/data"]
 EXPOSE 8000

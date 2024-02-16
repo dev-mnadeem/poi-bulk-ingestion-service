@@ -6,5 +6,7 @@
 Django==5.2.19
 celery==5.7.0
 
-# WSGI server used by the Docker image; not needed for `manage.py runserver`.
+# Used by the Docker image; not needed for `manage.py runserver`. gunicorn
+# does not serve files, so WhiteNoise serves the admin's static assets.
 gunicorn==26.2.0
+whitenoise==6.12.0
