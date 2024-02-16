@@ -282,3 +282,29 @@ class ValueValidationTests(SimpleTestCase):
         outcomes = list(CsvParser().parse(path))
         self.assertIsInstance(outcomes[0], SkippedRecord)
         self.assertEqual(outcomes[1].avg_rating, 3.0)
+
+
+class ByteOrderMarkTests(SimpleTestCase):
+    """Files saved by spreadsheet tools often start with a UTF-8 byte-order mark."""
+
+    def test_every_format_reads_a_file_with_a_bom(self):
+        sources = {
+            ".csv": (
+                "poi_id,poi_name,poi_category,poi_latitude,poi_longitude,poi_ratings\n"
+                '1,Café,cafe,1,2,"{4}"\n'
+            ),
+            ".json": (
+                '[{"id": 1, "name": "Café", "category": "cafe",'
+                ' "coordinates": {"latitude": 1, "longitude": 2}, "ratings": [4]}]'
+            ),
+            ".xml": (
+                '<?xml version="1.0" encoding="UTF-8"?><r><p><pid>1</pid><pname>Café</pname>'
+                "<pcategory>cafe</pcategory><platitude>1</platitude>"
+                "<plongitude>2</plongitude><pratings>4</pratings></p></r>"
+            ),
+        }
+        expected = PoIRecord("1", "Café", "cafe", 1.0, 2.0, 4.0)
+        for suffix, content in sources.items():
+            with self.subTest(format=suffix):
+                path = write_temp(self, suffix, content, encoding="utf-8-sig")
+                self.assertEqual(list(get_parser(path).parse(path)), [expected])

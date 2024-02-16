@@ -64,7 +64,10 @@ class CsvParser:
     )
 
     def parse(self, file_path: str) -> Iterator[ParseOutcome]:
-        with open(file_path, newline="", encoding="utf-8") as handle:
+        # utf-8-sig also reads plain UTF-8. Spreadsheet exports often start with
+        # a byte-order mark, which plain utf-8 glues onto the first header, so
+        # "poi_id" went missing and the whole file was rejected.
+        with open(file_path, newline="", encoding="utf-8-sig") as handle:
             reader = csv.DictReader(handle)
             if reader.fieldnames is None:
                 # Genuinely empty file. An import of nothing is not an error.

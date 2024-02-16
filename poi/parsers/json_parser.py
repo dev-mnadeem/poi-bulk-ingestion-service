@@ -30,7 +30,8 @@ class JsonParser:
     extensions = (".json",)
 
     def parse(self, file_path: str) -> Iterator[ParseOutcome]:
-        with open(file_path, encoding="utf-8") as handle:
+        # json.load refuses a leading byte-order mark; utf-8-sig strips one.
+        with open(file_path, encoding="utf-8-sig") as handle:
             try:
                 payload = json.load(handle)
             except json.JSONDecodeError as exc:
