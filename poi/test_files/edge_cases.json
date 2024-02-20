@@ -1,0 +1,5 @@
+[
+  {"id": 30, "name": "Unrated Cafe", "category": "cafe", "coordinates": {"latitude": 5.0, "longitude": 6.0}, "ratings": []},
+  {"id": 31, "name": "No Coords", "category": "cafe", "ratings": [1, 2]},
+  {"id": 32, "name": "Bad Ratings", "category": "cafe", "coordinates": {"latitude": 7.0, "longitude": 8.0}, "ratings": "nope"}
+]
