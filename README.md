@@ -12,7 +12,7 @@ file, and the `internal_id` this database assigns. The admin looks up either one
 ## Get it running
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
+python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 export DJANGO_DEBUG=1
@@ -248,3 +248,11 @@ has connectivity. Celery runs eagerly under `manage.py test`, so no broker is ne
   image has been built or booted.
 - **`--async` has no result backend by default**, so a queued import reports its
   outcome only to the worker's log unless `CELERY_RESULT_BACKEND` is set.
+
+Runtime dependencies are locked in `requirements.txt` from `requirements.in`.
+The importer suite passes on Python 3.12 with Django 5.2.18 and Celery 5.6.3;
+the offline checks run tasks eagerly and do not verify a live broker deployment.
+
+## Author
+
+[**Muhammad Nadeem**](https://github.com/dev-mnadeem)
